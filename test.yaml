@@ -1,0 +1,32 @@
+default:
+  image: node:18-alpine3.16 #ppiper/jenkins-master
+
+stages:
+  - prepare
+  - test
+  - build
+  - deploy
+
+# Create pipeline only on creation of merge request
+workflow:
+  rules:
+    - if: $CI_COMMIT_MESSAGE =~ /#deploy/
+
+# PREPARE
+
+preparing_piper:
+  stage: prepare
+  artifacts:
+    paths:
+      - bin/piper
+  script:
+    - apk add curl
+    - curl -L --create-dirs -o bin/piper https://github.com/SAP/jenkins-library/releases/download/v1.261.0/piper
+    - chmod +x bin/piper
+
+# TEST
+
+testing_lint:
+  stage: test
+  script:
+    - bin/piper npmExecuteLint
